@@ -7,5 +7,8 @@ import java.util.Collection;
  */
 public interface KnowledgeBase {
 
+    Fact getFact(FactId id);
     Collection<Fact> getFacts(FactType... factTypes);
+
+    void insert(Fact fact);
 }
