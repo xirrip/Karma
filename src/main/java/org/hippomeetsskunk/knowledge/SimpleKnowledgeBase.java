@@ -1,5 +1,6 @@
 package org.hippomeetsskunk.knowledge;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -9,7 +10,6 @@ import java.util.Collection;
 public class SimpleKnowledgeBase implements KnowledgeBase {
 
     private final Collection<Fact> facts = new ArrayList<Fact>();
-
 
     public Fact getFact(FactId id) {
         for(Fact f : facts){
