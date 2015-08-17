@@ -4,7 +4,7 @@ import org.hippomeetsskunk.knowledge.FactFactory;
 import org.hippomeetsskunk.knowledge.FactId;
 import org.hippomeetsskunk.knowledge.KnowledgeBase;
 import org.hippomeetsskunk.world.map.WorldMap;
-import org.hippomeetsskunk.world.map.generation.SimpleMapGenerator;
+import org.hippomeetsskunk.world.map.generation.RecursiveMapGenerator;
 
 import javax.inject.Inject;
 
@@ -31,7 +31,7 @@ public class World {
 
         // maybe inject, but then again, normal workflow rather loads map from file...
         System.out.println("Generating world...");
-        SimpleMapGenerator mapGenerator = new SimpleMapGenerator();
+        RecursiveMapGenerator mapGenerator = new RecursiveMapGenerator();
         mapGenerator.generate(map);
 
     }
