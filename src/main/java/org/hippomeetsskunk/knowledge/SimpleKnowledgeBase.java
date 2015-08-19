@@ -11,11 +11,21 @@ public class SimpleKnowledgeBase implements KnowledgeBase {
 
     private final Collection<Fact> facts = new ArrayList<Fact>();
 
-    public Fact getFact(FactId id) {
+    public Fact getFact(String id) {
         for(Fact f : facts){
             if(id.equals(f.getFactId())) return f;
         }
-        throw new IllegalArgumentException("Unknown fact.");
+        throw new IllegalArgumentException("Unknown fact: " + id);
+    }
+
+    public Fact getFactCaseInsensitive(String id) {
+        String lc = id.toLowerCase();
+        for(Fact f : facts){
+            if(f.getFactId()!=null) {
+                if (lc.equals(f.getFactId().toLowerCase())) return f;
+            }
+        }
+        throw new IllegalArgumentException("Unknown fact: " + id);
     }
 
     public Collection<Fact> getFacts(FactType... factTypes) {

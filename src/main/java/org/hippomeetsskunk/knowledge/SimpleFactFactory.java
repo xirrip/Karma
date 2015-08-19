@@ -5,16 +5,17 @@ package org.hippomeetsskunk.knowledge;
  */
 public class SimpleFactFactory implements FactFactory {
 
-    public void insertFact(FactId id, KnowledgeBase knowledgeBase) {
-        switch(id){
+    // create typed facts (not instantiations by id)
+    public void insertFact(FactType type, KnowledgeBase knowledgeBase) {
+        switch(type){
             case APPLE:
-                knowledgeBase.insert(new FactImpl(FactId.APPLE, FactType.APPLE));
+                knowledgeBase.insert(new FactImpl(null, FactType.APPLE));
                 break;
             case TOMATO:
-                knowledgeBase.insert(new FactImpl(FactId.TOMATO, FactType.TOMATO));
+                knowledgeBase.insert(new FactImpl(null, FactType.TOMATO));
                 break;
             default:
-                throw new IllegalArgumentException("Unknown fact id: " + id);
+                throw new IllegalArgumentException("Unknown fact type: " + type);
         }
     }
 

@@ -1,13 +1,20 @@
 package org.hippomeetsskunk.world.map.generation;
 
+import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.UniformIntegerDistribution;
 import org.apache.commons.math3.util.Pair;
+import org.hippomeetsskunk.knowledge.Fact;
+import org.hippomeetsskunk.knowledge.KnowledgeBase;
+import org.hippomeetsskunk.knowledge.facts.world.ContinentFact;
+import org.hippomeetsskunk.knowledge.facts.world.WorldFact;
+import org.hippomeetsskunk.world.map.TerraformableTerrain;
 import org.hippomeetsskunk.world.map.Terrain;
 import org.hippomeetsskunk.world.map.TerrainType;
 import org.hippomeetsskunk.world.map.WorldMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Stack;
 
@@ -17,68 +24,111 @@ import java.util.Stack;
 public class RecursiveMapGenerator {
     private final static Logger logger = LoggerFactory.getLogger(RecursiveMapGenerator.class);
 
-    public void generate(WorldMap map) {
+    private final static double PI_HALF = 0.5 * Math.PI;
+
+    public void generate(WorldMap map, KnowledgeBase knowledgeBase) throws IOException {
+        NameGenerator continentNameGenerator = new NameGenerator("elvish.ngn");
+        WorldFact world = (WorldFact) knowledgeBase.getFact("World");
+
         // seed of continent
         UniformIntegerDistribution xDist = new UniformIntegerDistribution(1, map.getMaxX() - 2);
         UniformIntegerDistribution yDist = new UniformIntegerDistribution(1, map.getMaxY() - 2);
+        UniformIntegerDistribution nameSyllabs = new UniformIntegerDistribution(2, 7);
+
+        GammaDistribution landSeaRatioDist = new GammaDistribution(30.0, 0.01);
+        GammaDistribution lambdaDDist = new GammaDistribution(10.0, 0.2);
+        GammaDistribution elongationDist = new GammaDistribution(5.0, 0.6);
 
         double tot = map.getMaxX() * map.getMaxY();
         long land = 0;
-        double landSeaRatio = 0.3;
+        double landSeaRatio = landSeaRatioDist.sample(); // 0.3;
 
-        double lambdaR = 0.9;
-        double lambdaD = 0.0004;
+        double distanceScale = Math.sqrt(tot);
+
+        logger.debug("Land / Sea ratio = " + landSeaRatio);
+        logger.debug("Distance scale   = " + distanceScale);
 
         while(land / tot < landSeaRatio){
             Stack<Pair<Integer, Integer>> stack = new Stack();
             Pair<Integer, Integer> root = new Pair(xDist.sample(), yDist.sample());
 
             // check if terrain is empty (SEA)
-            if(TerrainType.SEA.equals(map.get(root.getFirst(), root.getSecond()).getTerrainType())){
+            if(!TerrainType.SEA.equals(map.get(root.getFirst(), root.getSecond()).getTerrainType())) continue;
 
-                double angle0 = Math.random() * Math.PI;
+            // we have a continent!
+            ContinentFact continent = new ContinentFact(continentNameGenerator.compose(nameSyllabs.sample()), world);
+            knowledgeBase.insert(continent);
 
-                logger.debug("Adding continent at " + root.getFirst() + " | " + root.getSecond());
-                logger.debug("In direction " + ((angle0 / Math.PI * 180.0)));
+            int continentSize = 0;
+            double lambdaD = lambdaDDist.sample() / (10.0 * distanceScale); // 0.0004;
+            double elongation = elongationDist.sample();
+            double theta = 6.0;
 
-                stack.push(root);
-                while(!stack.isEmpty()) {
-                    Pair<Integer, Integer> p = stack.pop();
+            double angle0 = Math.random() * Math.PI;
 
-                    if(!isValid(map, p)) continue;
-                    if(!TerrainType.SEA.equals(map.get(p.getFirst(), p.getSecond()).getTerrainType())) continue;
+            logger.debug("Adding continent at " + root.getFirst() + " | " + root.getSecond());
+            logger.debug("alpha            = " + ((angle0 / Math.PI * 180.0)));
+            logger.debug("lD               = " + lambdaD);
+            logger.debug("elongation       = " + elongation);
+            logger.debug("theta            = " + theta);
 
-                    double distance = getDistance(root, p);
-                    double angle = getAngle(root, p, distance);
-                    if (angle > Math.PI) {
-                        // grow symmetrically in both opposite directions
-                        angle -= Math.PI;
-                    }
+            stack.push(root);
+            while(!stack.isEmpty()) {
+                Pair<Integer, Integer> p = stack.pop();
 
-                    int landConnections = getNumberOfLandConnections(map, p);
+                if(!isValid(map, p)) continue;
+                if(!TerrainType.SEA.equals(map.get(p.getFirst(), p.getSecond()).getTerrainType())) continue;
 
-                    double prob = 1.0;
-                    if (distance > 2.0) {
-                        prob = Math.exp(-lambdaD * distance * distance) *
-                                Math.exp(-lambdaR * Math.pow(angle - angle0, 2)) +
-                                landConnections / 10.0;
-                    }
+                double distance = getDistance(root, p);
 
-                    if (Math.random() < prob) {
-                        map.getTerraformable(p.getFirst(), p.getSecond()).setTerrain(TerrainType.PLAIN);
-                        ++land;
+                // angle from 0 - PI/2 relative to main axis
+                double relativeAngle = getRelativeAngle(root, p, distance, angle0);
 
-                        if(land / tot > landSeaRatio) break; // emergency exit
+                // now scale distance depending on angle to get different growths per direction
+                double b = distance / elongation + distance * (elongation-1.0) / elongation
+                        * (PI_HALF - relativeAngle) / PI_HALF;
+                double effectiveDistance = distance * distance / b;
 
-                        Iterator<Pair<Integer, Integer>> a = new AroundPositionIterator(p);
-                        while(a.hasNext()){
-                            stack.push(a.next());
-                        }
+                // number of NON-SEA neighbours
+                int landConnections = getNumberOfLandConnections(map, p);
+
+                double prob = 1.0;
+                if (distance > 2.0) { // make sure that at least a tiny spot of land is generated
+                    prob =  Math.exp(-lambdaD * effectiveDistance * effectiveDistance);
+                    prob += Math.pow(landConnections / theta, 1.75);
+                }
+
+                if (Math.random() < prob) {
+                    TerraformableTerrain terraformable = map.getTerraformable(p.getFirst(), p.getSecond());
+                    terraformable.setTerrain(TerrainType.PLAIN);
+                    terraformable.setContinent(continent);
+                    ++land;
+                    ++continentSize;
+
+                    Iterator<Pair<Integer, Integer>> a = new AroundPositionIterator(p);
+                    while(a.hasNext()){
+                        // trying to fill out near locations before growing off into the far distance, maybe?
+                        stack.add(stack.size(), a.next());
+                        // stack.push(a.next());
                     }
                 }
             }
-
+            continent.setSize(continentSize);
         }
+        world.setLandSeaRatio(landSeaRatio);
+    }
+
+    private double getRelativeAngle(Pair<Integer, Integer> x, Pair<Integer, Integer> y, double hypothenuse, double angle0) {
+        double angle = getAngle(x, y, hypothenuse);
+        if (angle > Math.PI) {
+            // grow symmetrically in both opposite directions
+            angle -= Math.PI;
+        }
+        double dAngle = Math.abs(angle0 - angle);
+        if(dAngle > 0.5 * Math.PI){
+            dAngle = Math.PI - dAngle;
+        }
+        return dAngle;
     }
 
     private int getNumberOfLandConnections(WorldMap map, Pair<Integer, Integer> p) {

@@ -6,8 +6,8 @@ package org.hippomeetsskunk.world.map;
 public class SimpleWorldMap implements WorldMap {
 
     // to do injection
-    private final int MAX_X = 1000;
-    private final int MAX_Y = 1000;
+    private final int MAX_X = 500;
+    private final int MAX_Y = 500;
 
     private final Terrain[][] terrain;
 

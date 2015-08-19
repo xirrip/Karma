@@ -4,6 +4,8 @@ package org.hippomeetsskunk.knowledge;
  * Created by skunk@hippomeetsskunk.ch on 8/14/2015.
  */
 public enum FactType {
+    WORLD,
+    CONTINENT,
     FOOD,
         FRUIT(FOOD),
             APPLE(FRUIT),
