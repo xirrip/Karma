@@ -6,6 +6,7 @@ import org.hippomeetsskunk.knowledge.KnowledgeBase;
 import org.hippomeetsskunk.knowledge.facts.world.WorldFact;
 import org.hippomeetsskunk.world.map.WorldMap;
 import org.hippomeetsskunk.world.map.generation.RecursiveMapGenerator;
+import org.hippomeetsskunk.world.map.generation.RegionGenerator;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -37,6 +38,9 @@ public class World {
         System.out.println("Generating world...");
         RecursiveMapGenerator mapGenerator = new RecursiveMapGenerator();
         mapGenerator.generate(map, knowledgeBase);
+
+        RegionGenerator regionGenerator = new RegionGenerator();
+        regionGenerator.generate(map, knowledgeBase);
 
     }
 

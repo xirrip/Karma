@@ -6,6 +6,7 @@ package org.hippomeetsskunk.knowledge;
 public enum FactType {
     WORLD,
     CONTINENT,
+    REGION,
     FOOD,
         FRUIT(FOOD),
             APPLE(FRUIT),

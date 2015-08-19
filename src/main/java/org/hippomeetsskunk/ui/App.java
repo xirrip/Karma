@@ -43,8 +43,13 @@ public class App extends JFrame
         JPanel scrollPanel = new JPanel();
 
         scrollPanel.setLayout(new BorderLayout());
-        scrollPanel.add(new WorldMapPanel(world.getMap()), BorderLayout.CENTER);
+        JTabbedPane tabbedPane = new JTabbedPane();
 
+        tabbedPane.addTab("Realistic", new WorldMapPanel(world.getMap(), WorldMapPanel.WorldMapPanelType.Realistic));
+        tabbedPane.addTab("Continent", new WorldMapPanel(world.getMap(), WorldMapPanel.WorldMapPanelType.Continent));
+        tabbedPane.addTab("Region", new WorldMapPanel(world.getMap(), WorldMapPanel.WorldMapPanelType.Region));
+
+        scrollPanel.add(tabbedPane, BorderLayout.CENTER);
         JPanel bottomPanel = new JPanel(new BorderLayout());
         JTextField input = new JTextField();
         bottomPanel.add(input, BorderLayout.NORTH);

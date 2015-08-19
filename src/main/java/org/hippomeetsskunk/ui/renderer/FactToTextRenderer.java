@@ -3,6 +3,7 @@ package org.hippomeetsskunk.ui.renderer;
 import org.hippomeetsskunk.knowledge.ConnectionType;
 import org.hippomeetsskunk.knowledge.Fact;
 import org.hippomeetsskunk.knowledge.facts.world.ContinentFact;
+import org.hippomeetsskunk.knowledge.facts.world.RegionFact;
 import org.hippomeetsskunk.knowledge.facts.world.WorldFact;
 
 import java.util.Collection;
@@ -22,6 +23,11 @@ public class FactToTextRenderer {
             ContinentFact cf = (ContinentFact) fact;
             text.append(String.format("Continent " + cf.getFactId() + ":\n"));
             text.append(String.format("Size: %,5d", cf.getSize()));
+        }
+        else if(fact instanceof RegionFact){
+            RegionFact rf = (RegionFact) fact;
+            text.append(String.format("Region " + rf.getFactId() + ":\n"));
+            text.append(String.format("Size: %,5d", rf.getSize()));
         }
         else{
             if(fact.getFactId() != null) text.append(fact.getFactId());

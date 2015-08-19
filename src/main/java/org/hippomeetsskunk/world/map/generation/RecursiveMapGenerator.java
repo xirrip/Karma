@@ -33,7 +33,7 @@ public class RecursiveMapGenerator {
         // seed of continent
         UniformIntegerDistribution xDist = new UniformIntegerDistribution(1, map.getMaxX() - 2);
         UniformIntegerDistribution yDist = new UniformIntegerDistribution(1, map.getMaxY() - 2);
-        UniformIntegerDistribution nameSyllabs = new UniformIntegerDistribution(2, 7);
+        UniformIntegerDistribution nameSyllabs = new UniformIntegerDistribution(2, 6);
 
         GammaDistribution landSeaRatioDist = new GammaDistribution(30.0, 0.01);
         GammaDistribution lambdaDDist = new GammaDistribution(10.0, 0.2);
