@@ -72,17 +72,25 @@ public class UserQueryAction extends AbstractAction {
             else if("and".equals(split[0].toLowerCase())){
                 // object last...
                 String objString = split[split.length - 1];
-                FactType type = FactType.valueOf(objString);
-                // now this could be a connection type or a fact type
-                StringBuffer text = new StringBuffer();
+                try {
+                    FactType type = FactType.valueOf(objString);
+                    // now this could be a connection type or a fact type
+                    StringBuffer text = new StringBuffer();
 
-                Collection<Fact> connectedFacts = this.context.getConnectedFactsOfType(type);
-                connectedFacts.stream()
-                        .forEach(f -> text.append(renderer.render(f)));
+                    Collection<Fact> connectedFacts = this.context.getConnectedFactsOfType(type);
+                    connectedFacts.stream()
+                            .forEach(f -> text.append(renderer.render(f)));
 
-                app.setOutput(text.toString());
-                source.setText("");
-                return;
+                    app.setOutput(text.toString());
+                    source.setText("");
+                    return;
+                }
+                catch(IllegalArgumentException ex){
+                    // TODO maybe try by ID instead, but can always do "tell" for this case
+                    app.setOutput(ex.getMessage());
+                    source.setText("");
+                    return;
+                }
             }
         }
     }

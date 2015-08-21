@@ -44,5 +44,10 @@ public interface Fact {
      */
     Collection<Fact> getConnectedFactsOfType(FactType type);
 
+    /**
+     *
+     * @param type
+     * @return whether fact is a subclass of type
+     */
     boolean isSubclassOf(FactType type);
 }

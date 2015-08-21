@@ -5,6 +5,7 @@ import org.hippomeetsskunk.knowledge.Fact;
 import org.hippomeetsskunk.knowledge.facts.world.ContinentFact;
 import org.hippomeetsskunk.knowledge.facts.world.RegionFact;
 import org.hippomeetsskunk.knowledge.facts.world.WorldFact;
+import org.hippomeetsskunk.world.map.Terrain;
 
 import java.util.Collection;
 
@@ -27,7 +28,14 @@ public class FactToTextRenderer {
         else if(fact instanceof RegionFact){
             RegionFact rf = (RegionFact) fact;
             text.append(String.format("Region " + rf.getFactId() + ":\n"));
-            text.append(String.format("Size: %,5d", rf.getSize()));
+            text.append(String.format("Size: %,5d\n", rf.getSize()));
+            text.append("Clima: " + (rf.isMaritimeClima() ? "maritime" : "continental") + "\n");
+        }
+        else if(fact instanceof Terrain){
+            Terrain t = (Terrain) fact;
+            text.append(t.getTerrainType() + " [" + t.getFactId() + "]\n");
+            text.append("Belongs to region " + t.getRegion().getFactId() + " on continent " + t.getContinent().getFactId() + ".\n");
+            text.append("Bordering sea: " + t.hasSeaBorder());
         }
         else{
             if(fact.getFactId() != null) text.append(fact.getFactId());

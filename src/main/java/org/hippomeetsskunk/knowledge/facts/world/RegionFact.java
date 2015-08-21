@@ -11,6 +11,7 @@ import org.hippomeetsskunk.knowledge.FactType;
 public class RegionFact extends FactImpl {
 
     private int size;
+    private boolean maritimeClima;
 
     public RegionFact(String name, ContinentFact continent){
         super(name, new FactType[] { FactType.REGION });
@@ -28,5 +29,12 @@ public class RegionFact extends FactImpl {
         return size;
     }
 
+    public void setMaritimeClima(boolean maritimeClima) {
+        this.maritimeClima = maritimeClima;
+    }
+
+    public boolean isMaritimeClima() {
+        return maritimeClima;
+    }
 }
 

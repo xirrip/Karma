@@ -161,6 +161,7 @@ public class RegionGenerator {
 
                         int numM = getMountainCount(p, map);
                         int numB = getBorderCount(p, map);
+                        int numS = getSeaBorderCount(p, map);
 
                         TerraformableTerrain t = map.getTerraformable(p.getFirst(), p.getSecond());
                         double mProb = mBaseProb * Math.pow(numB / 8.0 + 7.0 / 8.0, mBorderF) * Math.pow(numM / 8.0 + 7.0 / 8.0, mGroupingF);
@@ -169,16 +170,19 @@ public class RegionGenerator {
                             if(Math.random() < hProb){
                                 // TODO possibly add hill name
                                 // store as alias in knowledgeBase
-                                t.setTerrain(TerrainType.HILL);
+                                t.setTerrain(TerrainType.HILL, numS > 0);
                                 ++countHill;
                             }
                             else{
                                 // TODO possibly add mountain name
                                 // store as alias in knowledgeBase
-                                t.setTerrain(TerrainType.MOUNTAIN);
+                                t.setTerrain(TerrainType.MOUNTAIN, numS > 0);
                                 ++countMountain;
                             }
                         }
+                        else t.setTerrain(t.getTerrainType(), numS > 0);
+                        // maybe add lake / rivers as well.
+                        // would need to be strongly grouped / grow towards sea with strong probability to start from mountain / hill
                     }
 
                     generateClimaForRegion(realRegion, c, (ClimateZoneFact) climateZone.get(), map);
@@ -191,6 +195,19 @@ public class RegionGenerator {
         double hillRatio = countHill / ((double) (map.getMaxX() * map.getMaxY()));
         logger.debug("Added mountains: " + countMountain + " (ratio " + mountainRatio + ").");
         logger.debug("Added hills    : " + countHill + " (ratio " + hillRatio + ").");
+    }
+
+    private int getSeaBorderCount(Pair<Integer, Integer> pos, WorldMap map) {
+        AroundPositionIterator it = new AroundPositionIterator(pos);
+        int r=0;
+        while(it.hasNext()){
+            Pair<Integer, Integer> y = it.next();
+            if(!isValid(y, map)) continue;
+
+            Terrain terrain = map.get(y.getFirst(), y.getSecond());
+            if(TerrainType.SEA.equals(terrain.getTerrainType())) ++r;
+        }
+        return r;
     }
 
     private int getBorderCount(Pair<Integer, Integer> pos, WorldMap map) {
@@ -218,14 +235,30 @@ public class RegionGenerator {
             if(TerrainType.MOUNTAIN.equals(terrain.getTerrainType())) ++r;
             if(TerrainType.HILL.equals(terrain.getTerrainType())) ++r;
 
-            // maybe add lake / rivers as well.
-            // would need to be strongly grouped / grow towards sea with strong probability to start from mountain / hill
         }
         return r;
     }
 
     private void generateClimaForRegion(RegionFact region, RegionCluster cluster, ClimateZoneFact climateZone, WorldMap map) {
+
+        int cHills=0, cMountains=0, cPlain=0, cSeaBorder=0;
+        for(Pair<Integer, Integer> r : cluster.area){
+            Terrain terrain = map.get(r.getFirst(), r.getSecond());
+            if(terrain.hasSeaBorder()) ++cSeaBorder;
+
+            switch(terrain.getTerrainType()){
+                case MOUNTAIN: ++cMountains; break;
+                case SEA: break;
+                case HILL: ++cHills; break;
+                case PLAIN: ++cPlain; break;
+                case RIVER_LAKE: break;
+            }
+        }
+
         // maritime? (count sea border)
+        boolean maritime = (Math.sqrt(cluster.area.size()) <= cSeaBorder);
+        region.setMaritimeClima(maritime);
+        logger.debug(region.getFactId() + " -- maritime: area=" + cluster.area.size() + " , coast=" + cSeaBorder);
 
         // height? (count hills / mountains / plain / sea)
 

@@ -13,6 +13,7 @@ public class TerrainImpl extends FactImpl implements TerraformableTerrain {
     private TerrainType terrainType;
     private ContinentFact continent;
     private RegionFact region;
+    private boolean hasSeaBorder;
 
     public TerrainImpl(String id, TerrainType terrainType) {
         super(id, FactType.TERRAIN);
@@ -23,8 +24,9 @@ public class TerrainImpl extends FactImpl implements TerraformableTerrain {
         return terrainType;
     }
 
-    public void setTerrain(TerrainType terrainType) {
+    public void setTerrain(TerrainType terrainType, boolean hasSeaBorder) {
         this.terrainType = terrainType;
+        this.hasSeaBorder = hasSeaBorder;
     }
 
     @Override
@@ -45,5 +47,10 @@ public class TerrainImpl extends FactImpl implements TerraformableTerrain {
     @Override
     public void setRegion(RegionFact region) {
         this.region = region;
+    }
+
+    @Override
+    public boolean hasSeaBorder() {
+        return hasSeaBorder;
     }
 }

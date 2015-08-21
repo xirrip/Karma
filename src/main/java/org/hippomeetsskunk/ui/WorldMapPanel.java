@@ -72,6 +72,9 @@ public class WorldMapPanel extends JPanel {
     }
 
     private Color getColorByTerrainType(Terrain t) {
+        if(t == selected){
+            return selectedFactColor;
+        }
         switch(t.getTerrainType()){
             case SEA: return Color.BLUE;
             case PLAIN: return Color.GREEN;

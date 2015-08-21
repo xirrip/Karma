@@ -12,4 +12,5 @@ public interface Terrain extends Fact {
     TerrainType getTerrainType();
     ContinentFact getContinent();
     RegionFact getRegion();
+    boolean hasSeaBorder();
 }
