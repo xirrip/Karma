@@ -16,7 +16,7 @@ public class ConnectionImpl implements Connection {
         return type;
     }
 
-    public Fact getConnectionFact() {
+    public Fact getConnectedFact() {
         return fact;
     }
 }

@@ -1,9 +1,13 @@
 package org.hippomeetsskunk.world.map.generation;
 
+import org.apache.commons.math3.distribution.GammaDistribution;
+import org.apache.commons.math3.distribution.LogNormalDistribution;
 import org.apache.commons.math3.distribution.UniformIntegerDistribution;
 import org.apache.commons.math3.util.Pair;
-import org.hippomeetsskunk.knowledge.KnowledgeBase;
+import org.hippomeetsskunk.knowledge.*;
+import org.hippomeetsskunk.knowledge.facts.world.ClimateZoneFact;
 import org.hippomeetsskunk.knowledge.facts.world.RegionFact;
+import org.hippomeetsskunk.knowledge.facts.world.WorldFact;
 import org.hippomeetsskunk.world.map.TerraformableTerrain;
 import org.hippomeetsskunk.world.map.Terrain;
 import org.hippomeetsskunk.world.map.TerrainType;
@@ -110,9 +114,17 @@ public class RegionGenerator {
         logger.debug("Cluster size after growing from " + min + " to " + max + " for " + numClusters + " clusters.");
 
         // correctly name and attach regions
+
+        // mountain probability
+        GammaDistribution mountainProbDist = new GammaDistribution(4.0, 0.4); // divide by 10
+        GammaDistribution hillDist = new GammaDistribution(65.0, 0.1); // divide by 10, prob that a mountin is rather a hill
+
+        int countMountain = 0;
+        int countHill = 0;
+
+        WorldFact worldFact = (WorldFact) knowledgeBase.getFactCaseInsensitive("World");
         for(RegionCluster c : clusters){
             if(c.size > 0){
-                RegionFact region = c.region;
                 Pair<Integer, Integer> aPosition = c.area.iterator().next();
                 Terrain terrain = map.get(aPosition.getFirst(), aPosition.getSecond());
                 String name = regionNameGenerator.compose(nameSyllabs.sample());
@@ -121,12 +133,105 @@ public class RegionGenerator {
 
                 knowledgeBase.insert(realRegion);
 
+                int y=0;
                 for(Pair<Integer, Integer> p : c.area){
                     TerraformableTerrain t = map.getTerraformable(p.getFirst(), p.getSecond());
                     t.setRegion(realRegion);
+                    // merge continent as well
+                    // TODO possibly we have unreferenced continents left-over
+                    t.setContinent(terrain.getContinent());
+                    y += p.getSecond();
                 }
+                int center = y / c.area.size();
+                Optional<Fact> climateZone = worldFact.getConnectedFactsOfType(FactType.CLIMATE_ZONE).stream()
+                        .filter(f -> ((ClimateZoneFact) f).isWithinZone(center))
+                        .findFirst();
+                if(climateZone.isPresent()){
+                    realRegion.addConnection(new ConnectionImpl(ConnectionType.IS_DESCRIBED_BY, climateZone.get()));
+
+                    // generate hills / mountains
+                    double mBaseProb = mountainProbDist.sample() / 10.0;
+                    double mBorderF = 2.5;
+                    double mGroupingF = 2.5;
+
+                    logger.debug("Region " + realRegion.getFactId() + " has mountain base prob of " + mBaseProb);
+
+                    // first generate mountains / hills
+                    for(Pair<Integer, Integer> p : c.area){
+
+                        int numM = getMountainCount(p, map);
+                        int numB = getBorderCount(p, map);
+
+                        TerraformableTerrain t = map.getTerraformable(p.getFirst(), p.getSecond());
+                        double mProb = mBaseProb * Math.pow(numB / 8.0 + 7.0 / 8.0, mBorderF) * Math.pow(numM / 8.0 + 7.0 / 8.0, mGroupingF);
+                        if(Math.random() < mProb){
+                            double hProb = hillDist.sample() / 10.0;
+                            if(Math.random() < hProb){
+                                // TODO possibly add hill name
+                                // store as alias in knowledgeBase
+                                t.setTerrain(TerrainType.HILL);
+                                ++countHill;
+                            }
+                            else{
+                                // TODO possibly add mountain name
+                                // store as alias in knowledgeBase
+                                t.setTerrain(TerrainType.MOUNTAIN);
+                                ++countMountain;
+                            }
+                        }
+                    }
+
+                    generateClimaForRegion(realRegion, c, (ClimateZoneFact) climateZone.get(), map);
+                }
+                else throw new IllegalArgumentException("No climate zone found for latitude " + y + ".");
+
             }
         }
+        double mountainRatio = countMountain / ((double) (map.getMaxX() * map.getMaxY()));
+        double hillRatio = countHill / ((double) (map.getMaxX() * map.getMaxY()));
+        logger.debug("Added mountains: " + countMountain + " (ratio " + mountainRatio + ").");
+        logger.debug("Added hills    : " + countHill + " (ratio " + hillRatio + ").");
+    }
+
+    private int getBorderCount(Pair<Integer, Integer> pos, WorldMap map) {
+        RegionFact region = map.get(pos.getFirst(), pos.getSecond()).getRegion();
+        AroundPositionIterator it = new AroundPositionIterator(pos);
+        int r=0;
+        while(it.hasNext()){
+            Pair<Integer, Integer> y = it.next();
+            if(!isValid(y, map)) continue;
+
+            Terrain terrain = map.get(y.getFirst(), y.getSecond());
+            if(terrain.getRegion() != region) ++r;
+        }
+        return r;
+    }
+
+    private int getMountainCount(Pair<Integer, Integer> pos, WorldMap map) {
+        AroundPositionIterator it = new AroundPositionIterator(pos);
+        int r=0;
+        while(it.hasNext()){
+            Pair<Integer, Integer> y = it.next();
+            if(!isValid(y, map)) continue;
+
+            Terrain terrain = map.get(y.getFirst(), y.getSecond());
+            if(TerrainType.MOUNTAIN.equals(terrain.getTerrainType())) ++r;
+            if(TerrainType.HILL.equals(terrain.getTerrainType())) ++r;
+
+            // maybe add lake / rivers as well.
+            // would need to be strongly grouped / grow towards sea with strong probability to start from mountain / hill
+        }
+        return r;
+    }
+
+    private void generateClimaForRegion(RegionFact region, RegionCluster cluster, ClimateZoneFact climateZone, WorldMap map) {
+        // maritime? (count sea border)
+
+        // height? (count hills / mountains / plain / sea)
+
+
+        // https://en.wikipedia.org/wiki/K%C3%B6ppen_climate_classification
+        // http://www.climate-zone.com/continent/europe/
     }
 
     private void mergeClusters(RegionCluster c1, RegionCluster c2, WorldMap map) {

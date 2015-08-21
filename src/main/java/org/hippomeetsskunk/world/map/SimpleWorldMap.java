@@ -1,5 +1,9 @@
 package org.hippomeetsskunk.world.map;
 
+import org.hippomeetsskunk.knowledge.KnowledgeBase;
+
+import javax.inject.Inject;
+
 /**
  * Created by skunk@hippomeetsskunk.ch on 8/15/2015.
  */
@@ -11,16 +15,18 @@ public class SimpleWorldMap implements WorldMap {
 
     private final Terrain[][] terrain;
 
-    public SimpleWorldMap() {
+    @Inject
+    public SimpleWorldMap(KnowledgeBase knowledgeBase) {
         this.terrain = new Terrain[MAX_X][MAX_Y];
-        initialize();
+        initialize(knowledgeBase);
     }
 
     // do this differently (from outside, DI?)
-    private void initialize(){
+    private void initialize(KnowledgeBase knowledgeBase){
         for(int x=0; x<MAX_X; ++x){
             for(int y=0; y<MAX_Y; ++y){
-                terrain[x][y] = new TerrainImpl(TerrainType.SEA);
+                terrain[x][y] = new TerrainImpl(x + "-" + y, TerrainType.SEA);
+                knowledgeBase.insert(terrain[x][y]);
             }
         }
     }

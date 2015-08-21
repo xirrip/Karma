@@ -2,7 +2,6 @@ package org.hippomeetsskunk.knowledge;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,7 +38,7 @@ public class FactImpl implements Fact{
     public Set<Fact> getConnectedFacts(ConnectionType connectionType) {
         Set<Fact> set = connections.stream()
                 .filter(it -> connectionType.equals(it.getConnectionType()))
-                .map(it -> it.getConnectionFact())
+                .map(it -> it.getConnectedFact())
                 .collect(Collectors.toSet());
         return set;
     }
@@ -52,6 +51,21 @@ public class FactImpl implements Fact{
         return connections.stream()
                 .map(c -> c.getConnectionType())
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Collection<Fact> getConnectedFactsOfType(FactType type) {
+        Set<Fact> set = connections.stream()
+                .filter(it -> it.getConnectedFact().isSubclassOf(type))
+                .map(it -> it.getConnectedFact())
+                .collect(Collectors.toSet());
+        return set;
+    }
+
+    @Override
+    public boolean isSubclassOf(FactType type) {
+        return factTypes.stream()
+                .anyMatch(f -> f.isSubclassOf(type));
     }
 
 

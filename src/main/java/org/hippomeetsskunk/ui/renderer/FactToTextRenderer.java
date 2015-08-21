@@ -31,6 +31,10 @@ public class FactToTextRenderer {
         }
         else{
             if(fact.getFactId() != null) text.append(fact.getFactId());
+            text.append("\n[ ");
+            fact.getFactTypes().stream()
+                    .forEach(t -> text.append(t + " "));
+            text.append("]\n");
         }
 
         // lets see about connections...
@@ -39,7 +43,12 @@ public class FactToTextRenderer {
             Collection<Fact> connectedFacts = fact.getConnectedFacts(type);
             if(connectedFacts != null) {
                 for (Fact f : connectedFacts) {
-                    if (f.getFactId() != null) text.append("\t" + f.getFactId() + "\n");
+                    if (f.getFactId() != null){
+                        text.append("\t" + f.getFactId() + " [ ");
+                        f.getFactTypes().stream()
+                                .forEach(t-> text.append(t + " "));
+                        text.append("]\n");
+                    }
                 }
             }
         }

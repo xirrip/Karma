@@ -9,9 +9,15 @@ import org.hippomeetsskunk.knowledge.FactType;
 public class WorldFact extends FactImpl {
 
     private double landSeaRatio;
+    private final int area;
+    private final int maxX;
+    private final int maxY;
 
-    public WorldFact(){
+    public WorldFact(int maxX, int maxY){
         super("World", new FactType[] { FactType.WORLD });
+        this.maxX = maxX;
+        this.maxY = maxY;
+        this.area = maxX * maxY;
     }
 
     public void setLandSeaRatio(double landSeaRatio) {
@@ -20,5 +26,17 @@ public class WorldFact extends FactImpl {
 
     public double getLandSeaRatio() {
         return landSeaRatio;
+    }
+
+    public int getArea() {
+        return area;
+    }
+
+    public int getMaxX() {
+        return maxX;
+    }
+
+    public int getMaxY() {
+        return maxY;
     }
 }

@@ -1,5 +1,6 @@
 package org.hippomeetsskunk.ui;
 
+import org.hippomeetsskunk.knowledge.Fact;
 import org.hippomeetsskunk.world.map.Terrain;
 import org.hippomeetsskunk.world.map.WorldMap;
 
@@ -12,10 +13,13 @@ import java.util.*;
  */
 public class WorldMapPanel extends JPanel {
 
+    private final static Color selectedFactColor = new Color(255, 186, 24);
+
     public static enum WorldMapPanelType{
         Realistic, Continent, Region
     };
 
+    private Fact selected;
     private final java.util.List<Color> colors =  new ArrayList<>();
 
     private final WorldMap map;
@@ -81,6 +85,10 @@ public class WorldMapPanel extends JPanel {
     private Color getColorByContinent(Terrain t, Map<String, Color> selectedColors) {
         if(t.getContinent() == null) return Color.BLUE;
 
+        if(t.getContinent() == selected) {
+            return selectedFactColor;
+        }
+
         String key = t.getContinent().getFactId();
         if(selectedColors.containsKey(key)) return selectedColors.get(key);
 
@@ -92,12 +100,20 @@ public class WorldMapPanel extends JPanel {
     private Color getColorByRegion(Terrain t, Map<String, Color> selectedColors) {
         if(t.getRegion() == null) return Color.BLUE;
 
+        if(t.getRegion() == selected) {
+            return selectedFactColor;
+        }
+
         String key = t.getRegion().getFactId();
         if(selectedColors.containsKey(key)) return selectedColors.get(key);
 
         Color color = colors.get(selectedColors.size() % colors.size());
         selectedColors.put(key, color);
         return color;
+    }
+
+    public void setSelected(Fact selected) {
+        this.selected = selected;
     }
 
 }

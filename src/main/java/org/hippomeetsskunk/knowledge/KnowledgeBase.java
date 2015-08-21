@@ -4,6 +4,7 @@ import java.util.Collection;
 
 /**
  * Created by skunk@hippomeetsskunk.ch on 8/14/2015.
+ * TODO add possibility to create "alias" ID's for facts (e.g. mountain names)
  */
 public interface KnowledgeBase {
 

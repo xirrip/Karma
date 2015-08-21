@@ -36,4 +36,13 @@ public interface Fact {
      * @return distinct connection types from all connections of this fact.
      */
     Set<? extends ConnectionType> getConnectionTypes();
+
+    /**
+     *
+     * @param type
+     * @return connected facts of type
+     */
+    Collection<Fact> getConnectedFactsOfType(FactType type);
+
+    boolean isSubclassOf(FactType type);
 }
