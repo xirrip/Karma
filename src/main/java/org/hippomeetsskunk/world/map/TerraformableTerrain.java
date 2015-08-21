@@ -10,4 +10,5 @@ public interface TerraformableTerrain extends Terrain {
     void setTerrain(TerrainType terrainType, boolean hasSeaBorder);
     void setContinent(ContinentFact continent);
     void setRegion(RegionFact region);
+    void setHeight(double height);
 }

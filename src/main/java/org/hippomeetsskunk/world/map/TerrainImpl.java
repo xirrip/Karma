@@ -14,10 +14,12 @@ public class TerrainImpl extends FactImpl implements TerraformableTerrain {
     private ContinentFact continent;
     private RegionFact region;
     private boolean hasSeaBorder;
+    private double height;
 
     public TerrainImpl(String id, TerrainType terrainType) {
         super(id, FactType.TERRAIN);
         this.terrainType = terrainType;
+        this.height = 0;
     }
 
     public TerrainType getTerrainType() {
@@ -52,5 +54,14 @@ public class TerrainImpl extends FactImpl implements TerraformableTerrain {
     @Override
     public boolean hasSeaBorder() {
         return hasSeaBorder;
+    }
+
+    public double getHeight() {
+        return height;
+    }
+
+    @Override
+    public void setHeight(double height) {
+        this.height = height;
     }
 }

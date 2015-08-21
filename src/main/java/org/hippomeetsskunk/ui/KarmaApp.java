@@ -29,7 +29,7 @@ public class KarmaApp extends JFrame
     private WorldMapPanel realisticWorldMap;
     private WorldMapPanel continentWorldMap;
     private WorldMapPanel regionWorldMap;
-    // additionally a height map
+    private WorldMapPanel heightWorldMap;
 
     @Singleton
     @Component(modules = {SimpleKnowledgeBaseModule.class })
@@ -70,6 +70,8 @@ public class KarmaApp extends JFrame
         tabbedPane.addTab("Continent", continentWorldMap);
         regionWorldMap = new WorldMapPanel(world.getMap(), WorldMapPanel.WorldMapPanelType.Region);
         tabbedPane.addTab("Region", regionWorldMap);
+        heightWorldMap = new WorldMapPanel(world.getMap(), WorldMapPanel.WorldMapPanelType.Height);
+        tabbedPane.addTab("Height", heightWorldMap);
 
         scrollPanel.add(tabbedPane, BorderLayout.CENTER);
         JPanel bottomPanel = new JPanel(new BorderLayout());
@@ -102,6 +104,7 @@ public class KarmaApp extends JFrame
         realisticWorldMap.setSelected(fact);
         continentWorldMap.setSelected(fact);
         regionWorldMap.setSelected(fact);
+        heightWorldMap.setSelected(fact);
 
         repaint();
     }

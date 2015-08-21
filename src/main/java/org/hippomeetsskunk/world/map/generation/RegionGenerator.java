@@ -117,7 +117,7 @@ public class RegionGenerator {
 
         // mountain probability
         GammaDistribution mountainProbDist = new GammaDistribution(4.0, 0.4); // divide by 10
-        GammaDistribution hillDist = new GammaDistribution(65.0, 0.1); // divide by 10, prob that a mountin is rather a hill
+        GammaDistribution hillDist = new GammaDistribution(45.0, 0.1); // divide by 10, prob that a mountin is rather a hill
 
         int countMountain = 0;
         int countHill = 0;
@@ -166,7 +166,7 @@ public class RegionGenerator {
                         TerraformableTerrain t = map.getTerraformable(p.getFirst(), p.getSecond());
                         double mProb = mBaseProb * Math.pow(numB / 8.0 + 7.0 / 8.0, mBorderF) * Math.pow(numM / 8.0 + 7.0 / 8.0, mGroupingF);
                         if(Math.random() < mProb){
-                            double hProb = hillDist.sample() / 10.0;
+                            double hProb = hillDist.sample() / 10.0 + 0.2; // increase chances of hill only
                             if(Math.random() < hProb){
                                 // TODO possibly add hill name
                                 // store as alias in knowledgeBase
@@ -261,7 +261,36 @@ public class RegionGenerator {
         logger.debug(region.getFactId() + " -- maritime: area=" + cluster.area.size() + " , coast=" + cSeaBorder);
 
         // height? (count hills / mountains / plain / sea)
+        GammaDistribution mountainHeightDist = new GammaDistribution(40.0, 70.0);
+        double minHillHeight = 750.0;
+        double heightFactor = 1.3 * (1.0 + (1.5 * cHills + 2.5 * cMountains - 2.0 * cSeaBorder) / ((double) cluster.area.size()));
 
+        GammaDistribution heightDist = new GammaDistribution(50.0, 5.0);
+        double min=Double.POSITIVE_INFINITY, max=0;
+
+        for(Pair<Integer, Integer> r : cluster.area){
+            TerraformableTerrain terrain = map.getTerraformable(r.getFirst(), r.getSecond());
+            double basisHeight = heightDist.sample() * heightFactor;
+            double height = 0.0;
+            switch(terrain.getTerrainType()){
+                case MOUNTAIN: height = heightFactor * basisHeight + 2000.0 + mountainHeightDist.sample(); break;
+                case SEA: height = 0.0; break;
+                case HILL: height = heightFactor * basisHeight + minHillHeight; break;
+                case PLAIN: height = heightFactor * basisHeight; break;
+                case RIVER_LAKE: height = heightFactor * basisHeight; break;
+            }
+            terrain.setHeight(height);
+            min = Math.min(min, height);
+            max = Math.max(max, height);
+
+            // TODO name heighest mountains and make available in region info?
+            // TODO height average excluding mountains
+
+        }
+
+        logger.debug("Height min = " + min + " max = " + max);
+
+        // TODO climate
 
         // https://en.wikipedia.org/wiki/K%C3%B6ppen_climate_classification
         // http://www.climate-zone.com/continent/europe/

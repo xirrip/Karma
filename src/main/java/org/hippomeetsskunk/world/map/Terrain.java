@@ -13,4 +13,5 @@ public interface Terrain extends Fact {
     ContinentFact getContinent();
     RegionFact getRegion();
     boolean hasSeaBorder();
+    double getHeight();
 }

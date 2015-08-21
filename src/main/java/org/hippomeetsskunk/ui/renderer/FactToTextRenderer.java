@@ -34,7 +34,8 @@ public class FactToTextRenderer {
         else if(fact instanceof Terrain){
             Terrain t = (Terrain) fact;
             text.append(t.getTerrainType() + " [" + t.getFactId() + "]\n");
-            text.append("Belongs to region " + t.getRegion().getFactId() + " on continent " + t.getContinent().getFactId() + ".\n");
+            if(t.getRegion() !=null) text.append("Region:        " + t.getRegion().getFactId() + "\n");
+            if(t.getContinent() != null) text.append("Continent:     " + t.getContinent().getFactId() + ".\n");
             text.append("Bordering sea: " + t.hasSeaBorder());
         }
         else{

@@ -16,7 +16,7 @@ public class WorldMapPanel extends JPanel {
     private final static Color selectedFactColor = new Color(255, 186, 24);
 
     public static enum WorldMapPanelType{
-        Realistic, Continent, Region
+        Realistic, Continent, Region, Height
     };
 
     private Fact selected;
@@ -65,6 +65,9 @@ public class WorldMapPanel extends JPanel {
                     case Region:
                         g.setColor(getColorByRegion(t, selectedColors));
                         break;
+                    case Height:
+                        g.setColor(getColorByHeight(t, selectedColors));
+                        break;
                 }
                 g.drawRect(x+10, y+10, 1, 1);
             }
@@ -88,6 +91,9 @@ public class WorldMapPanel extends JPanel {
     private Color getColorByContinent(Terrain t, Map<String, Color> selectedColors) {
         if(t.getContinent() == null) return Color.BLUE;
 
+        if(t == selected){
+            return selectedFactColor;
+        }
         if(t.getContinent() == selected) {
             return selectedFactColor;
         }
@@ -103,6 +109,9 @@ public class WorldMapPanel extends JPanel {
     private Color getColorByRegion(Terrain t, Map<String, Color> selectedColors) {
         if(t.getRegion() == null) return Color.BLUE;
 
+        if(t == selected){
+            return selectedFactColor;
+        }
         if(t.getRegion() == selected) {
             return selectedFactColor;
         }
@@ -113,6 +122,16 @@ public class WorldMapPanel extends JPanel {
         Color color = colors.get(selectedColors.size() % colors.size());
         selectedColors.put(key, color);
         return color;
+    }
+
+    private Color getColorByHeight(Terrain t, Map<String, Color> selectedColors) {
+        if(t.getRegion() == null) return Color.BLUE;
+
+        if(t == selected){
+            return selectedFactColor;
+        }
+        float s = (float) Math.pow(Math.min(1.0, t.getHeight() / 7000.0), 0.5);
+        return Color.getHSBColor(0.3f, s, s);
     }
 
     public void setSelected(Fact selected) {
