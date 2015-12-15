@@ -13,4 +13,5 @@ public interface KnowledgeBase {
     Collection<Fact> getFacts(FactType... factTypes);
 
     void insert(Fact fact);
+    void alias(String alias, Fact fact);
 }
