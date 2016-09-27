@@ -3,7 +3,9 @@ package org.hippomeetsskunk.ui.renderer;
 import org.hippomeetsskunk.knowledge.ConnectionType;
 import org.hippomeetsskunk.knowledge.Fact;
 import org.hippomeetsskunk.knowledge.facts.world.ContinentFact;
+import org.hippomeetsskunk.knowledge.facts.world.RegionFact;
 import org.hippomeetsskunk.knowledge.facts.world.WorldFact;
+import org.hippomeetsskunk.world.map.Terrain;
 
 import java.util.Collection;
 
@@ -23,8 +25,25 @@ public class FactToTextRenderer {
             text.append(String.format("Continent " + cf.getFactId() + ":\n"));
             text.append(String.format("Size: %,5d", cf.getSize()));
         }
+        else if(fact instanceof RegionFact){
+            RegionFact rf = (RegionFact) fact;
+            text.append(String.format("Region " + rf.getFactId() + ":\n"));
+            text.append(String.format("Size: %,5d\n", rf.getSize()));
+            text.append("Clima: " + (rf.isMaritimeClima() ? "maritime" : "continental") + "\n");
+        }
+        else if(fact instanceof Terrain){
+            Terrain t = (Terrain) fact;
+            text.append(t.getTerrainType() + " [" + t.getFactId() + "]\n");
+            if(t.getRegion() !=null) text.append("Region:        " + t.getRegion().getFactId() + "\n");
+            if(t.getContinent() != null) text.append("Continent:     " + t.getContinent().getFactId() + ".\n");
+            text.append("Bordering sea: " + t.hasSeaBorder());
+        }
         else{
             if(fact.getFactId() != null) text.append(fact.getFactId());
+            text.append("\n[ ");
+            fact.getFactTypes().stream()
+                    .forEach(t -> text.append(t + " "));
+            text.append("]\n");
         }
 
         // lets see about connections...
@@ -33,7 +52,12 @@ public class FactToTextRenderer {
             Collection<Fact> connectedFacts = fact.getConnectedFacts(type);
             if(connectedFacts != null) {
                 for (Fact f : connectedFacts) {
-                    if (f.getFactId() != null) text.append("\t" + f.getFactId() + "\n");
+                    if (f.getFactId() != null){
+                        text.append("\t" + f.getFactId() + " [ ");
+                        f.getFactTypes().stream()
+                                .forEach(t-> text.append(t + " "));
+                        text.append("]\n");
+                    }
                 }
             }
         }

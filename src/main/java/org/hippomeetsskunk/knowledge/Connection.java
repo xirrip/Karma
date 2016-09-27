@@ -5,5 +5,5 @@ package org.hippomeetsskunk.knowledge;
  */
 public interface Connection {
     ConnectionType getConnectionType();
-    Fact getConnectionFact();
+    Fact getConnectedFact();
 }

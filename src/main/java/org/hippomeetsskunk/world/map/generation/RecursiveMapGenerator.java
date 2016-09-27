@@ -3,7 +3,6 @@ package org.hippomeetsskunk.world.map.generation;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.UniformIntegerDistribution;
 import org.apache.commons.math3.util.Pair;
-import org.hippomeetsskunk.knowledge.Fact;
 import org.hippomeetsskunk.knowledge.KnowledgeBase;
 import org.hippomeetsskunk.knowledge.facts.world.ContinentFact;
 import org.hippomeetsskunk.knowledge.facts.world.WorldFact;
@@ -33,7 +32,7 @@ public class RecursiveMapGenerator {
         // seed of continent
         UniformIntegerDistribution xDist = new UniformIntegerDistribution(1, map.getMaxX() - 2);
         UniformIntegerDistribution yDist = new UniformIntegerDistribution(1, map.getMaxY() - 2);
-        UniformIntegerDistribution nameSyllabs = new UniformIntegerDistribution(2, 7);
+        UniformIntegerDistribution nameSyllabs = new UniformIntegerDistribution(2, 6);
 
         GammaDistribution landSeaRatioDist = new GammaDistribution(30.0, 0.01);
         GammaDistribution lambdaDDist = new GammaDistribution(10.0, 0.2);
@@ -100,7 +99,7 @@ public class RecursiveMapGenerator {
 
                 if (Math.random() < prob) {
                     TerraformableTerrain terraformable = map.getTerraformable(p.getFirst(), p.getSecond());
-                    terraformable.setTerrain(TerrainType.PLAIN);
+                    terraformable.setTerrain(TerrainType.PLAIN, true);
                     terraformable.setContinent(continent);
                     ++land;
                     ++continentSize;

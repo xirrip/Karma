@@ -21,7 +21,7 @@ public class SimpleKnowledgeBaseModule {
     }
 
     @Provides @Singleton
-    WorldMap provideMap(){
-        return new SimpleWorldMap();
+    WorldMap provideMap(KnowledgeBase knowledgeBase){
+        return new SimpleWorldMap(knowledgeBase);
     }
 }

@@ -22,16 +22,16 @@ public class SimpleKnowledgeBaseTest {
         */
 
         Assert.assertEquals(1, kb.getFacts(FactType.APPLE).size());
-        Assert.assertEquals(FactType.APPLE, kb.getFacts(FactType.APPLE).iterator().next().getFactId());
+        Assert.assertEquals(FactType.APPLE, kb.getFacts(FactType.APPLE).iterator().next().getFactTypes().iterator().next());
 
         Assert.assertEquals(1, kb.getFacts(FactType.FRUIT).size());
-        Assert.assertEquals(FactType.APPLE, kb.getFacts(FactType.FRUIT).iterator().next().getFactId());
+        Assert.assertEquals(FactType.APPLE, kb.getFacts(FactType.FRUIT).iterator().next().getFactTypes().iterator().next());
 
         Assert.assertEquals(1, kb.getFacts(FactType.VEGETABLE).size());
-        Assert.assertEquals(FactType.TOMATO, kb.getFacts(FactType.VEGETABLE).iterator().next().getFactId());
+        Assert.assertEquals(FactType.TOMATO, kb.getFacts(FactType.VEGETABLE).iterator().next().getFactTypes().iterator().next());
 
         Assert.assertEquals(1, kb.getFacts(FactType.FOOD, FactType.FRUIT).size());
-        Assert.assertEquals(FactType.APPLE, kb.getFacts(FactType.FOOD, FactType.FRUIT).iterator().next().getFactId());
+        Assert.assertEquals(FactType.APPLE, kb.getFacts(FactType.FOOD, FactType.FRUIT).iterator().next().getFactTypes().iterator().next());
 
         Assert.assertEquals(2, kb.getFacts(FactType.FOOD).size());
         Assert.assertEquals(0, kb.getFacts(FactType.FRUIT, FactType.VEGETABLE).size()); // AND
