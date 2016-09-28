@@ -6,7 +6,7 @@ package org.hippomeetsskunk.physics;
 public class PhysicsWorld {
     static final public double G = 6.67408e-11 ;
     static final public double mEarth = 5.972e24;
-    static final public double rEarth = 6.371e3;
+    static final public double rEarth = 6.371e6;
     static final public double dEarthSun = 149.6e9;
 
     static final public double gravitationalAccelerationOnEarth = G * mEarth / (rEarth * rEarth);

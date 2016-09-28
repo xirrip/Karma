@@ -16,9 +16,14 @@ public class Particle {
     // remove energy (possibly added through inacurracy in integration)
     private double damping;
 
+    private ParticleRule rule = null;
 
     public Particle(double mass){
         setMass(mass);
+        position = new Vector3(0.0, 0.0, 0.0);
+        velocity = new Vector3(0.0, 0.0, 0.0);
+        acceleration = new Vector3(0.0, 0.0, 0.0);
+        damping = 1.0;
     }
 
     public void setMass(double mass){
@@ -68,5 +73,15 @@ public class Particle {
 
     public double kineticEnergy(){
         return 1.0 / (2.0 * inverseMass) * velocity.magnitude2();
+    }
+
+    public void setRule(ParticleRule rule) {
+        this.rule = rule;
+    }
+
+    public void triggerRules(ParticleSimulator particleSimulator) {
+        if(rule!=null){
+            rule.trigger(this, particleSimulator);
+        }
     }
 }
