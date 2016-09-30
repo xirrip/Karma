@@ -1,8 +1,7 @@
 package org.hippomeetsskunk.ui.renderer.passive;
 
-import org.hippomeetsskunk.physics.SlowMotion;
-import org.hippomeetsskunk.physics.particles.LeapFrogIntegrator;
 import org.hippomeetsskunk.physics.particles.Particle;
+import org.hippomeetsskunk.physics.particles.ParticleForceGenerator;
 import org.hippomeetsskunk.physics.particles.ParticleSimulator;
 
 import java.awt.*;
@@ -13,11 +12,7 @@ import java.util.*;
  */
 public class ParticleRenderingGameController implements GameController {
 
-    public enum ShotType{
-        PISTOL, ARTILLERY, FIREBALL, LASER;
-    }
-
-    private final double WORLD_SCALE = 0.1;
+    private final double WORLD_SCALE = 0.5;
 
     private static final int slowUpdateSpeed = 20;
     // 1, because timer speeds have to be positive
@@ -52,22 +47,21 @@ public class ParticleRenderingGameController implements GameController {
     // The current task that's updating this GameData's state
     private TimerTask updateTask;
 
+    private final WorldToDisplayTransformer worldToDisplayTransformer;
+
     /**
      * Constructs a new GameData. GameData's constructor creates and
      * schedules an initial updating task
-     *
-     * @param width  The width of the bounded game area
+     *  @param width  The width of the bounded game area
      * @param height The height of the bounded game area
+     * @param worldToDisplayTransformer
      */
-    public ParticleRenderingGameController(int width, int height) {
+    public ParticleRenderingGameController(int width, int height, WorldToDisplayTransformer worldToDisplayTransformer) {
+        this.worldToDisplayTransformer = worldToDisplayTransformer;
+
         boundedGameArea = new Rectangle(width, height);
         particles = new ArrayList<>();
         particleSimulator = new ParticleSimulator(particles); // share the list
-
-        for(ShotType type : ShotType.values()){
-            Particle particle = createParticle(type);
-            particles.add(particle);
-        }
 
         // Initialize the time, fps, and other variables
         oldTime = System.nanoTime();
@@ -88,6 +82,14 @@ public class ParticleRenderingGameController implements GameController {
             }
         };
 
+    }
+
+    public synchronized void addParticle(Particle particle){
+        this.particles.add(particle);
+    }
+
+    public synchronized  void addForce(ParticleForceGenerator force){
+        particleSimulator.add(force);
     }
 
     /**
@@ -184,10 +186,11 @@ public class ParticleRenderingGameController implements GameController {
         // Now draw all the circles, location 0,0 will be top left
         // corner within the borders of the window
         for (Particle particle : particles) {
-            particleGraphics.setColor(Color.BLUE);
+            Color color = getColor(particle.getType());
+            particleGraphics.setColor(color);
             particleGraphics.fillOval(
-                    (int) (20 + WORLD_SCALE * particle.getPosition().getZ()),
-                    (int) (drawAreaHeight * 0.5 + WORLD_SCALE * particle.getPosition().getY()),
+                    worldToDisplayTransformer.getX(particle.getPosition(), drawAreaWidth),
+                    worldToDisplayTransformer.getY(particle.getPosition(), drawAreaHeight),
                     10, 10);
         }
         particleGraphics.dispose();
@@ -200,6 +203,16 @@ public class ParticleRenderingGameController implements GameController {
         // (Assuming this method being called means the graphics will be
         // used for a frame update)
         frames++;
+    }
+
+    private Color getColor(int type) {
+        switch(type){
+            case 0: return Color.BLUE;
+            case 1: return Color.BLACK;
+            case 2: return Color.RED;
+            case 3: return Color.YELLOW;
+        }
+        return Color.BLACK;
     }
 
     private synchronized void updateData() {
@@ -227,41 +240,9 @@ public class ParticleRenderingGameController implements GameController {
         }
     }
 
-
-    static public Particle createParticle(ShotType shotType){
-        switch(shotType){
-            case PISTOL: {
-                Particle p = new Particle(2.0);
-                p.setVelocity(0.0, 0.0, 35.0);
-                p.setAcceleration(0.0, -SlowMotion.gravityAccelerationChange(0.1), 0.0);
-                p.setDamping(0.99);
-                return p;
-            }
-            case ARTILLERY: {
-                Particle p = new Particle(200.0);
-                p.setVelocity(0.0, 30.0, 40.0);
-                p.setAcceleration(0.0, -20.0, 0.0);
-                p.setDamping(0.99);
-                return p;
-            }
-            case FIREBALL: {
-                Particle p = new Particle(1.0);
-                p.setVelocity(0.0, 0.0, 10.0);
-                p.setAcceleration(0.0, 0.6, 0.0);  // floats up
-                p.setDamping(0.9);
-                return p;
-            }
-            case LASER: { // laser bolt, not realistic :-)
-                Particle p = new Particle(0.1);
-                p.setVelocity(0.0, 0.0, 100.0);
-                p.setAcceleration(0.0, 0.0, 0.0);  // no gravity
-                p.setDamping(0.99);
-                return p;
-            }
-        }
-        throw new IllegalArgumentException("Unknown shot type: " + shotType);
+    public synchronized void setTimeScale(double timeScale){
+        particleSimulator.setTimeScale(timeScale);
     }
-
 
 }
 

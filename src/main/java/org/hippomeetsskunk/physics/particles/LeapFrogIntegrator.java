@@ -1,5 +1,7 @@
 package org.hippomeetsskunk.physics.particles;
 
+import org.hippomeetsskunk.physics.basics.Vector3;
+
 /**
  * Created by SRZCHX on 27.09.2016.
  */
@@ -15,8 +17,14 @@ public class LeapFrogIntegrator {
 
         // drag on velocity
         particle.getVelocity().scale(Math.pow(particle.getDamping(), dt));
-        // update velocity
-        particle.getVelocity().addScaled(particle.getAcceleration(), dt);
 
+        // F = m*a
+        Vector3 acceleration = new Vector3(particle.getAcceleration());
+        if(particle.getForce()!=null) {
+            acceleration.addScaled(particle.getForce(), particle.getInverseMass());
+        }
+
+        // update velocity
+        particle.getVelocity().addScaled(acceleration, dt);
     }
 }

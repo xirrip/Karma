@@ -22,6 +22,12 @@ public class Vector3 {
         this.z = z;
     }
 
+    public Vector3(Vector3 v){
+        x = v.getX();
+        y = v.getY();
+        z = v.getZ();
+    }
+
     public void invert(){
         x = -x;
         y = -y;
@@ -32,6 +38,12 @@ public class Vector3 {
         x += a.x;
         y += a.y;
         z += a.z;
+    }
+
+    public void add(double x, double y, double z){
+        this.x += x;
+        this.y += y;
+        this.z += z;
     }
 
     public void subtract(Vector3 a){

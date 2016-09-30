@@ -20,6 +20,10 @@ public class ParticleSimulator {
     private final List<Particle> addees = new ArrayList<>();
     private final List<Particle> removees = new ArrayList<>();
 
+    private final List<ParticleForceGenerator> forces = new ArrayList<>();
+
+    private double timeScale = 1.0;
+
     public ParticleSimulator(){
         this(new ArrayList<>());
     }
@@ -30,9 +34,21 @@ public class ParticleSimulator {
     }
 
     public void update(double elapsedTime){
+
+        elapsedTime *= timeScale;
+
+        for(ParticleForceGenerator force : forces){
+            force.updateForce(elapsedTime);
+        }
+
         // Loop through all circles, update them
         for (Particle particle : particles) {
             integrator.step(particle, elapsedTime);
+
+            // particles need to know how long they live
+            particle.clearForce();
+            particle.updateLifeTime(elapsedTime);
+
             particle.triggerRules(this);
         }
 
@@ -67,5 +83,17 @@ public class ParticleSimulator {
     public void replace(Particle oldParticle, List<Particle> newParticles){
         remove(oldParticle);
         add(newParticles);
+    }
+
+    public void add(ParticleForceGenerator force){
+        forces.add(force);
+    }
+
+    public void remove(ParticleForceGenerator force){
+        forces.remove(force);
+    }
+
+    public void setTimeScale(double timeScale) {
+        this.timeScale = timeScale;
     }
 }

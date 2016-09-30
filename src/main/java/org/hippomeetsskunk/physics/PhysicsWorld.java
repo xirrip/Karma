@@ -10,4 +10,6 @@ public class PhysicsWorld {
     static final public double dEarthSun = 149.6e9;
 
     static final public double gravitationalAccelerationOnEarth = G * mEarth / (rEarth * rEarth);
+
+    static final public double secondsPerYear = 365.2425 * 24 * 60 * 60;
 }
